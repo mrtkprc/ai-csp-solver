@@ -1,5 +1,10 @@
 from constraint import *
 import operator
+import sys
+from PIL import Image,ImageFont,ImageDraw,ImageEnhance,ImageColor
+import numpy as np
+import matplotlib.pyplot as plt
+
 class BlockCSP:
     def __init__(self,readingFile):
         pass
@@ -26,6 +31,7 @@ class BlockCSP:
             if(len(line_val)>=5):
                 line = line_val.split(',')
                 self.variables[line[0]] = (int(line[1]),int(line[2]))
+                
     def constructBoard(self):
         max_x_axis = 3*self.numberOfHorizontalBlock+self.numberOfVerticalBlock - 1 
         max_y_axis = 3*self.numberOfVerticalBlock+self.numberOfHorizontalBlock - 1
@@ -33,26 +39,44 @@ class BlockCSP:
         self.max_y_axis = max_y_axis
         self.board = []
         for i in range(max_y_axis):
-            self.board.append(['__']*max_x_axis)
+            self.board.append(['_']*max_x_axis)
 
     #şuan bu kısım eksik            
-    def placedBlocksView(self):
-        for key,value in self.variables.items():
-            print(key," and ",value)
+    def GetPlacedBlocksView(self):
+        for i in range(self.numberOfVerticalBlock+self.numberOfHorizontalBlock):
+            block_name = self.ActualSolution[i][0]
+            block_pos_x = self.variables[block_name][0]
+            block_pos_y = self.variables[block_name][1]
+            block_type = block_name[0]
+            
+            if (block_type == "H"):
+                for k in range(3):
+                    self.board[self.max_y_axis - 1 - block_pos_y][block_pos_x+k] = i+1
+            else:
+                for k in range(3):
+                    self.board[self.max_y_axis - 1 - k][block_pos_x] = i+1
+
+
+            
 
     def printBoardState(self):
         for i in range(len(self.board)):
             for k in range(len(self.board[0])):
                 print(self.board[i][k],end=" ")
             print("") #new line
+
     def printSolution(self):
         if (self.IsSolutionFeasible == True):
+            print("Solution can be obtained following in order.")
             self.ActualSolution = sorted(self.ActualSolution.items(), key=lambda x: x[1])
             for val in self.ActualSolution:
                 print(val[0]," - ",val[1])
         else:
             print("There is no solution.")
-
+    
+    def drawResultImage(self):
+        pass
+        
 
     def constructConstraints(self,problem):
 
@@ -110,18 +134,18 @@ class BlockCSP:
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[0]])
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[1]])
         
-        
         self.ActualSolution = problem.getSolution()
         self.OtherFeasibleSolutions = problem.getSolutions()
 
 if __name__=="__main__":
-    print("Main Started")
     problem = Problem(BacktrackingSolver())
-    bcp_csp = BlockCSP("input_figure_1.txt")
+    if len(sys.argv) == 1:
+        bcp_csp = BlockCSP("input_figure_1.txt")
+    else:
+        bcp_csp = BlockCSP(sys.argv[1])
     bcp_csp.readFile()
     bcp_csp.constructBoard()
     bcp_csp.constructConstraints(problem)
     bcp_csp.printSolution()
-
-    
-    print("Main Ended")
+    bcp_csp.GetPlacedBlocksView()
+    bcp_csp.printBoardState()
