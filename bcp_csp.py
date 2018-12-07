@@ -1,10 +1,12 @@
 from constraint import *
+import operator
 class BlockCSP:
     def __init__(self,readingFile):
         pass
         self.readingFile = readingFile
         self.variables = dict()
         self.IsSolutionFeasible = True
+        self.ActualSolution = dict()
         
     def readFile(self):
         """
@@ -45,8 +47,9 @@ class BlockCSP:
             print("") #new line
     def printSolution(self):
         if (self.IsSolutionFeasible == True):
-            for key,value in self.ActualSolution.items():
-                print("x")
+            self.ActualSolution = sorted(self.ActualSolution.items(), key=lambda x: x[1])
+            for val in self.ActualSolution:
+                print(val[0]," - ",val[1])
         else:
             print("There is no solution.")
 
@@ -86,9 +89,6 @@ class BlockCSP:
                         key_c_type = keyC[0]
                         key_c_x_position = valueC[0]
                         key_c_y_position = valueC[1]
-                        # if key_c_type != "V":
-                        #     continue
-
                         if((key_c_type == "H" and key_a_type == "H") and ( (key_a_y_position - key_c_y_position) == 1 ) and (abs(key_a_x_position - key_c_x_position) <= 1 )):
                             possible_1H_2V_case_list.clear()
                             possible_1H_2V_case_supported_middle = True
@@ -109,6 +109,7 @@ class BlockCSP:
                     elif (possible_1H_2V_case_supported_middle == False and len(possible_1H_2V_case_list) == 2):
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[0]])
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[1]])
+        
         
         self.ActualSolution = problem.getSolution()
         self.OtherFeasibleSolutions = problem.getSolutions()
