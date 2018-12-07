@@ -1,0 +1,6 @@
+Input Format:
+    Second Line     : Number of Vertical Block
+    Third Line      : Number of Horizontal Block
+    Other Lines     : UniqueNameOfBlock,X-Coordinate,Y-Coordinate
+                      Example: V1,2,3
+                      V standsfor Vertical. X = 2 and Y =3 
