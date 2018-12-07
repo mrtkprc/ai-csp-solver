@@ -41,30 +41,6 @@ class BlockCSP:
         for i in range(max_y_axis):
             self.board.append(['_']*max_x_axis)
 
-    #şuan bu kısım eksik            
-    def GetPlacedBlocksView(self):
-        for i in range(self.numberOfVerticalBlock+self.numberOfHorizontalBlock):
-            block_name = self.ActualSolution[i][0]
-            block_pos_x = self.variables[block_name][0]
-            block_pos_y = self.variables[block_name][1]
-            block_type = block_name[0]
-            
-            if (block_type == "H"):
-                for k in range(3):
-                    self.board[self.max_y_axis - 1 - block_pos_y][block_pos_x+k] = i+1
-            else:
-                for k in range(3):
-                    self.board[self.max_y_axis - 1 - k][block_pos_x] = i+1
-
-
-            
-
-    def printBoardState(self):
-        for i in range(len(self.board)):
-            for k in range(len(self.board[0])):
-                print(self.board[i][k],end=" ")
-            print("") #new line
-
     def printSolution(self):
         if (self.IsSolutionFeasible == True):
             print("Solution can be obtained following in order.")
@@ -73,10 +49,6 @@ class BlockCSP:
                 print(val[0]," - ",val[1])
         else:
             print("There is no solution.")
-    
-    def drawResultImage(self):
-        pass
-        
 
     def constructConstraints(self,problem):
 
@@ -136,6 +108,29 @@ class BlockCSP:
         
         self.ActualSolution = problem.getSolution()
         self.OtherFeasibleSolutions = problem.getSolutions()
+    def drawResultImage(self):
+        each_edge = 30
+        text_offset = 1
+        resultImage = Image.new("RGB",(each_edge * self.max_x_axis,each_edge*self.max_y_axis),color=ImageColor.getrgb('gray'))
+        draw = ImageDraw.Draw(resultImage)
+        font = ImageFont.truetype("arial.ttf", 22)
+        
+        for i in range(self.numberOfVerticalBlock+self.numberOfHorizontalBlock):
+            block_name = self.ActualSolution[i][0]
+            block_pos_x = self.variables[block_name][0]
+            block_pos_y = self.variables[block_name][1]
+            block_type = block_name[0]
+            
+            if (block_type == "H"):
+                for k in range(3):
+                    draw.text(( (block_pos_x+k)*each_edge - text_offset,resultImage.height - each_edge - each_edge * block_pos_y - text_offset),str(i+1),fill="yellow",font=font)
+            else:
+                for k in range(3):
+                    draw.text((each_edge * block_pos_x,resultImage.height - each_edge - (each_edge * (block_pos_y +k)) - text_offset),str(i+1),fill="yellow",font=font)
+        
+        resultImage.show()
+
+        #resultImage.save("result.png")
 
 if __name__=="__main__":
     problem = Problem(BacktrackingSolver())
@@ -147,5 +142,4 @@ if __name__=="__main__":
     bcp_csp.constructBoard()
     bcp_csp.constructConstraints(problem)
     bcp_csp.printSolution()
-    bcp_csp.GetPlacedBlocksView()
-    bcp_csp.printBoardState()
+    bcp_csp.drawResultImage()
