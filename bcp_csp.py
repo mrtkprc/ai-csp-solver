@@ -4,7 +4,7 @@ class BlockCSP:
         pass
         self.readingFile = readingFile
         self.variables = dict()
-        self.SolutionFeasible = True
+        self.IsSolutionFeasible = True
         
     def readFile(self):
         """
@@ -43,6 +43,14 @@ class BlockCSP:
             for k in range(len(self.board[0])):
                 print(self.board[i][k],end=" ")
             print("") #new line
+    def printSolution(self):
+        if (self.IsSolutionFeasible == True):
+            for key,value in self.ActualSolution.items():
+                print("x")
+        else:
+            print("There is no solution.")
+
+
     def constructConstraints(self,problem):
 
         possible_value_list = []
@@ -71,15 +79,21 @@ class BlockCSP:
                 if( ((key_a_type != "H") or (key_b_type != "V")) and (key_a_y_position < key_b_y_position)):
                     problem.addConstraint(lambda a, b: a < b, [keyA,keyB])
                 # Case: Horizontal block can be supported by two vertical block 
-                elif ((key_a_type == "H") and (key_b_type == "V") and (key_a_y_position - (key_b_y_position + 3) == 0) and ((key_a_x_position + 1) != key_b_x_position) and ((key_a_x_position == key_b_x_position or (key_a_x_position+2) == key_b_x_position))):
+                if ((key_a_type == "H") and (key_b_type == "V") and (key_a_y_position - (key_b_y_position + 3) == 0) and ((key_a_x_position + 1) != key_b_x_position) and ((key_a_x_position == key_b_x_position or (key_a_x_position+2) == key_b_x_position))):
                     possible_1H_2V_case_list.clear()
                     for keyC,valueC in self.variables.items():
                         possible_1H_2V_case_supported_middle = False
                         key_c_type = keyC[0]
                         key_c_x_position = valueC[0]
                         key_c_y_position = valueC[1]
-                        if key_c_type != "V":
-                            continue
+                        # if key_c_type != "V":
+                        #     continue
+
+                        if((key_c_type == "H" and key_a_type == "H") and ( (key_a_y_position - key_c_y_position) == 1 ) and (abs(key_a_x_position - key_c_x_position) <= 1 )):
+                            possible_1H_2V_case_list.clear()
+                            possible_1H_2V_case_supported_middle = True
+                            break
+
                         if (key_a_y_position - (key_c_y_position + 3) != 0):
                             continue
                         if ((key_a_x_position+1) == key_c_x_position):
@@ -90,23 +104,23 @@ class BlockCSP:
                             possible_1H_2V_case_list.append(keyC)
                             
                     if(possible_1H_2V_case_supported_middle == False and len(possible_1H_2V_case_list) != 2):
-                        self.SolutionFeasible = False
+                        self.IsSolutionFeasible = False
                         return
                     elif (possible_1H_2V_case_supported_middle == False and len(possible_1H_2V_case_list) == 2):
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[0]])
                         problem.addConstraint(lambda a, b: a > b, [keyA,possible_1H_2V_case_list[1]])
         
+        self.ActualSolution = problem.getSolution()
+        self.OtherFeasibleSolutions = problem.getSolutions()
+
 if __name__=="__main__":
     print("Main Started")
     problem = Problem(BacktrackingSolver())
-    bcp_csp = BlockCSP("input_figure_2.txt")
+    bcp_csp = BlockCSP("input_figure_1.txt")
     bcp_csp.readFile()
     bcp_csp.constructBoard()
     bcp_csp.constructConstraints(problem)
+    bcp_csp.printSolution()
 
-    if(bcp_csp.SolutionFeasible == True):
-        print(problem.getSolution())
-    else:
-        print("There is no solution!!!")
     
     print("Main Ended")
